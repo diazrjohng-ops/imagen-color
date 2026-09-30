@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparador · Original y transformado</title>
+<style>
+:root {
+  --teal: #0D7377;
+  --vin: #9C1C2E;
+  --text: #444444;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: #fff;
+  color: var(--text);
+}
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 16px 28px;
+}
+.lead {
+  margin: 0 0 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: center;
+  color: #666;
+}
+.viewer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 22px rgba(0,0,0,.12);
+  background: #f3f3f3;
+  user-select: none;
+  touch-action: none;
+  cursor: ew-resize;
+}
+.layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.layer img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.layer.after {
+  clip-path: inset(0 0 0 50%);
+}
+.handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  background: #fff;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+  z-index: 3;
+}
+.handle-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--teal);
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,.18);
+  color: var(--teal);
+}
+.handle-btn svg { display: block; }
+.label {
+  position: absolute;
+  top: 12px;
+  z-index: 4;
+  background: rgba(255,255,255,.92);
+  color: var(--vin);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  padding: 6px 10px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+.label.before { left: 12px; }
+.label.after { right: 12px; color: var(--teal); }
+.hint {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: #777;
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <p class="lead">Arrastra el control para comparar la imagen original con la versión transformada.</p>
+
+  <div class="viewer" id="viewer" role="img" aria-label="Comparador de imágenes">
+    <div class="layer before">
+      <img
+        src="https://mimi-panda.com/storage/colorings/ea56369f-ad2e-4529-bc7a-0aa93646c5a7_origin.png"
+        alt="Imagen original"
+        draggable="false"
+      >
+    </div>
+    <div class="layer after" id="after">
+      <img
+        src="https://mimi-panda.com/storage/colorings/ea56369f-ad2e-4529-bc7a-0aa93646c5a7_transformed.jpg"
+        alt="Imagen transformada"
+        draggable="false"
+      >
+    </div>
+    <span class="label before">ORIGINAL</span>
+    <span class="label after">TRANSFORMADO</span>
+    <div class="handle" id="handle">
+      <div class="handle-btn" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M8 12H4M4 12L7 9M4 12L7 15M16 12H20M20 12L17 9M20 12L17 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint">Arrastra hacia la izquierda o la derecha para comparar.</p>
+</main>
+
+<script>
+(() => {
+  const viewer = document.getElementById('viewer');
+  const after = document.getElementById('after');
+  const handle = document.getElementById('handle');
+  let active = false;
+
+  function setPos(clientX) {
+    const rect = viewer.getBoundingClientRect();
+    let x = clientX - rect.left;
+    x = Math.max(0, Math.min(x, rect.width));
+    const pct = (x / rect.width) * 100;
+    after.style.clipPath = `inset(0 0 0 ${pct}%)`;
+    handle.style.left = pct + '%';
+  }
+
+  function start(e) {
+    active = true;
+    const point = e.touches ? e.touches[0].clientX : e.clientX;
+    setPos(point);
+  }
+  function move(e) {
+    if (!active) return;
+    const point = e.touches ? e.touches[0].clientX : e.clientX;
+    setPos(point);
+  }
+  function end() { active = false; }
+
+  viewer.addEventListener('mousedown', start);
+  window.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', end);
+
+  viewer.addEventListener('touchstart', start, { passive: true });
+  window.addEventListener('touchmove', move, { passive: true });
+  window.addEventListener('touchend', end);
+})();
+</script>
+</body>
+</html>
